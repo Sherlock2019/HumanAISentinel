@@ -1,0 +1,2 @@
+# Preserve executable shell scripts and consistent line endings across platforms.
+* text=auto eol=lf

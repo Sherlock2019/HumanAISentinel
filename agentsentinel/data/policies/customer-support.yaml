@@ -1,0 +1,9 @@
+allow: [search_kb, get_ticket, create_ticket, workflow_api]
+require_approval: [refund_customer]
+deny: [read_secret, execute_shell, modify_iam, delete_customer]
+resources_allow: [knowledge_base, support_db, workflow_api]
+resources_deny: [production_secrets, AWS_PRODUCTION_TOKEN, iam, payroll, customer_database]
+network_destinations: [internal.demo]
+rate_limit: 20
+cost_limit: 5
+risk_sensitivity: standard

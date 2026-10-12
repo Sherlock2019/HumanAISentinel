@@ -1,0 +1,10 @@
+.venv
+.run
+.env
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+**/dist
+**/test-results
+data/*.db
+data/*.db-*

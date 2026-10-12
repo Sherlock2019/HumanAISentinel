@@ -1,0 +1,29 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and generated build/test output
+.venv/
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+test-results/
+playwright-report/
+*.tsbuildinfo
+
+# Local runtime state and evidence (seeded on startup)
+.run/
+*.db
+*.db-*
+*.log
+
+# Editor and OS state
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
