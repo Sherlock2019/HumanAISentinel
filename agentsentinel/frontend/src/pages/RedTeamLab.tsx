@@ -9,16 +9,19 @@ import {
   Bell,
 } from "lucide-react";
 import { Panel, Badge } from "../components/ui";
+import { IntentChainRunner } from "../components/intent";
 import { api, post } from "../api/client";
 import type { Scenario, SentinelEvent } from "../types";
 export default function RedTeamLab({
   onRefresh,
   onInspect,
   onError,
+  onMonitor,
 }: {
   onRefresh: () => void;
   onInspect: (e: SentinelEvent) => void;
   onError: (message: string) => void;
+  onMonitor: (sessionId: string) => void;
 }) {
   const [scenarios, setScenarios] = useState<Scenario[]>([]),
     [busy, setBusy] = useState(""),
@@ -85,6 +88,7 @@ export default function RedTeamLab({
           Reset target agent and behavior window before each scenario
         </label>
       </div>
+      <IntentChainRunner onRefresh={onRefresh} onError={onError} onMonitor={onMonitor} />
       <div className="scenario-grid">
         {scenarios.map((s) => (
           <Panel key={s.id}>

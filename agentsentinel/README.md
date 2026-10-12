@@ -32,16 +32,24 @@ cd /home/dzoan/AIsentinel
 ./start.sh
 ```
 
-The script checks dependencies and ports, creates `.venv`, installs dependencies when inputs change, copies `.env.example` if needed, seeds the database without deleting existing evidence, starts both services and checks readiness. First installation requires package access; subsequent runs in mock mode require no internet, paid service or API key. Python needs its distribution's venv support installed.
+The script checks dependencies, automatically stops the existing owned AgentSentinel instance, checks ports, creates `.venv`, installs dependencies when inputs change, copies `.env.example` if needed, seeds the database without deleting existing evidence, starts both services and checks readiness. Running `./start.sh` again is a restart, not a second copy. First installation requires package access; subsequent runs in mock mode require no internet, paid service or API key. Python needs its distribution's venv support installed.
 
 | Service | URL |
 | --- | --- |
-| Dashboard | http://localhost:5173 |
-| Backend | http://localhost:8000 |
-| API reference | http://localhost:8000/docs |
-| Health | http://localhost:8000/health |
+| Dashboard | http://localhost:5174 |
+| Backend | http://localhost:8100 |
+| API reference | http://localhost:8100/docs |
+| Health | http://localhost:8100/health |
 
-Press Ctrl+C to stop both processes, or run `./stop.sh` from another terminal. Logs and owned PID files are in `.run/`. Ports 8000 and 5173 must be free. The services bind to loopback.
+Press Ctrl+C to stop both processes, or run `./stop.sh` from another terminal. Logs and owned PID files are in `.run/`. Default ports are 8100 and 5174, leaving 8000 and 5173 untouched for other projects. The launcher verifies process ownership before stopping anything; unrelated or untracked processes occupying the selected ports are left untouched and reported. Demo data and audit evidence are preserved across restarts. The services bind to loopback.
+
+Override ports through the shell environment (the launcher does not source `.env`):
+
+```bash
+SENTINEL_API_PORT=8200 SENTINEL_UI_PORT=5274 ./start.sh
+```
+
+The launcher configures the frontend API proxy and readiness checks automatically. Ports must be different integers from 1 to 65535. `npm run dev` and browser tests also default to dashboard port 5174; for tests with custom ports, pass the same `SENTINEL_UI_PORT` or set `SENTINEL_UI_URL`. Docker Compose maps the same default host ports to its existing internal service ports.
 
 ## Problem
 
@@ -101,7 +109,7 @@ Default `AI_PROVIDER=mock` returns deterministic structured scores for intent al
 
 The model is advisory. Its recommendation can restrict permission, never grant a permission excluded by deterministic rules. A failed provider returns REVIEW for otherwise allowed actions; deterministic dangerous actions remain BLOCK. Invalid provider names fail closed through the same path.
 
-Optional adapters are implemented for Ollama, OpenAI, Gemini and Anthropic. Select the provider in `.env` and restart. API keys are read only by the backend, never displayed in Settings or exception evidence. Remote providers transmit **synthetic evaluation context** to the explicitly selected service and are not used in mock mode. Live-provider integration has not been tested with real credentials; model availability and provider configuration may require overrides.
+Optional adapters are implemented for Ollama, OpenAI, Gemini and Anthropic. Select the provider in `.env` and restart. API keys are read only by the backend, never displayed in Settings or exception evidence. Remote providers transmit evaluation context to the explicitly selected service and are not used in mock mode. In real GitHub repository mode, that context includes the fetched public commit patches, not just synthetic fixtures. Live-provider integration has not been tested with real credentials; model availability and provider configuration may require overrides.
 
 ```dotenv
 AI_PROVIDER=ollama
@@ -163,6 +171,46 @@ Eleven deterministic scenarios cover safe search, refund review, payment review,
 
 ## Five-minute jury demo
 
+### GitHub Integration: real repository or guided demo
+
+Open **GitHub Integration** (the second navigation item) or visit `http://localhost:5174/#commit`.
+
+For real repository input:
+
+1. Select **Real GitHub repository** and enter a public `https://github.com/owner/repository` URL (`.git` is accepted).
+2. Optionally enter a branch or commit SHA. Blank uses the latest commit on the default branch.
+3. Confirm the coding sandbox reset and click **Fetch repository & run Sentinel**.
+4. Inspect the fetched SHA, changed-file patches, coverage notices, configured judge and gateway decisions. Download the evidence JSON if needed.
+
+The backend makes read-only, unauthenticated requests to the fixed `api.github.com` host using GitHub's [commit API](https://docs.github.com/en/rest/commits/commits). It never clones, executes repository code, installs repository dependencies, triggers GitHub Actions, publishes a check or changes merge rules. URLs with credentials, other hosts or ambiguous paths are rejected; redirects are not followed. Private repositories are not supported. GitHub rate limits and missing/empty repositories produce visible errors before any sandbox reset.
+
+Intake is bounded to 2 MB per API response, the first 30 changed files on the first commit API page, and 20,000 diff characters. Missing/binary patches, pagination and truncation are reported as partial coverage. Only changed-file patches from one commit are reviewed, not the entire repository. The fixed `read_repo` / `run_tests` / `generate_patch` plan is evaluated with the actual diff supplied as untrusted data to the configured judge. Tests and patch receipts are synthetic; mock remains a deterministic keyword-based judge, not a live LLM. Selecting a remote judge sends the bounded public patches to that provider.
+
+Real-input reports use **Runtime review: COMPLETE**, not fixture PASS/FAIL. Completion is not a repository security certificate, proof of real test execution or permission to merge. Content can cause BLOCK or REVIEW; human approval and current policy remain enforced.
+
+For the offline guided demo:
+
+1. Choose **Prompt-injection attack**, **Safe code review**, or **Patch needs approval**.
+2. Keep the fixture URL, or enter a GitHub commit URL as a label. Select a simulated push, pull-request or manual trigger.
+3. Confirm the coding sandbox reset and click **Run mock GitHub Action**.
+4. Watch each proposed tool call pass through the actual Sentinel gateway. Inspect any event or download the evidence JSON.
+
+| Fixture | Observed action sequence | Expected proof |
+| --- | --- | --- |
+| Safe code review | `read_repo` ALLOW → `run_tests` ALLOW → `generate_patch` ALLOW | Three synthetic receipts; safety test PASS |
+| Patch needs approval | `read_repo` ALLOW → `run_tests` ALLOW → `apply_patch` REVIEW | Patch stays pending until approval or rejection; policy is rechecked |
+| Prompt injection | `read_repo` ALLOW → `read_prod_secret` BLOCK → `run_tests` BLOCK | Secret access never executes; automatic quarantine blocks the retry; alerts and audit evidence |
+
+**Safety test PASS means the fixture’s expected enforcement behavior occurred.** A blocked attack passes the safety test; it does not mean the commit is safe to merge or free of vulnerabilities. Observed outcomes are never forced: edited policies, disabled containment or a different judge can produce a failed expectation.
+
+GitHub triggers, commit content, runner jobs, agent planning and tool output are simulated. A supplied URL is validated but never fetched; the chosen fixture supplies the diff. No workflow is installed, no actual code/tests run, and no GitHub merge rules change. Backend gateway decisions, approval holds, containment, events and audit records execute locally. Mock mode needs no GitHub account or API key.
+
+Each run is persisted with its event IDs. Interrupted runs can resume from their saved step; repeated advance requests do not create duplicate steps. A new run restores only CodingAgent, cancels its pending approvals and moves its history outside the active window while preserving evidence. It never rewrites policies or releases a global emergency stop. A changed coding session supersedes an incomplete run.
+
+The integration API is under `/api/commit-demo`: `GET /examples`, `GET /runs`, `GET /runs/{id}`, `POST /runs`, and `POST /runs/{id}/advance`. Mutations require the existing admin token. Fixture run creation takes `example_id` (`safe`, `approval`, `injection`), optional `commit_url`, `trigger` and `reset_agent: true`. Real input takes `example_id: "github"`, `repo_url`, optional `ref` and `reset_agent: true`; advancement takes the zero-based `expected_step`. Reports include `input_source`, `ai_provider`, actual commit data and coverage notices.
+
+### Original guided presentation
+
 Use one jury-friendly presentation view; no Recruiter/Engineer mode selection is needed. **Show technical evidence** in Event Inspector expands evaluator scores, the risk formula and raw JSON on demand. Audit records can be expanded individually.
 
 1. **0:00–0:45 — Problem and boundary.** Start on How It Works. Explain the workflow and its three outcomes; use What Makes It Work to identify the AI judge and independent safety controls. Automatic containment is conditional, not part of every allowed action.
@@ -180,7 +228,7 @@ Starting a guided demo explicitly restores the four seeded sandbox agents and mo
 Administrative writes require `X-Admin-Token` (default `local-demo-admin`). Gateway requests require `X-Agent-Token`. This is a local POC credential scheme, not production authentication or tenant isolation.
 
 ```bash
-curl -X POST http://localhost:8000/api/actions/intercept \
+curl -X POST http://localhost:8100/api/actions/intercept \
   -H 'Content-Type: application/json' \
   -H 'X-Agent-Token: demo-coding-agent-token' \
   -d '{"agent_id":"coding-agent","task":"Review this application source code.","tool":"read_prod_secret","resource":"AWS_PRODUCTION_TOKEN","operation":"READ","arguments":{},"context":{}}'
@@ -189,7 +237,7 @@ curl -X POST http://localhost:8000/api/actions/intercept \
 That initial demo token works until the agent is restored. To restore and obtain its new token:
 
 ```bash
-curl -X POST http://localhost:8000/api/agents/coding-agent/resume \
+curl -X POST http://localhost:8100/api/agents/coding-agent/resume \
   -H 'X-Admin-Token: local-demo-admin'
 ```
 
@@ -238,6 +286,48 @@ docker compose down
 ```
 
 Docker is optional and is not needed by start.sh. The compose POC uses the Vite development server, backend readiness checks and a named SQLite data volume. It is a local demo configuration, not a hardened deployment manifest.
+
+## Intent Sentinel: guard the session, not just the tool call
+
+One tool call may look harmless. The sequence may not. Intent Sentinel predicts the likely goal of an
+agent's action sequence before a dangerous action completes.
+
+```text
+list_files → read_config → read_env → read_secret → external_upload
+```
+
+| Step | Predicted intent | Drift | Session risk | Response |
+|------|------------------|-------|--------------|----------|
+| list_files | Normal code inspection | 5% | 8 | Allow |
+| read_config | Configuration discovery | 18% | 20 | Allow + watch |
+| read_env | Possible credential discovery | 55% | 58 | Review (permitted by policy, held by intent) |
+| read_secret | Credential discovery | 91% | 94 | Block |
+| external_upload | Data exfiltration | 98% | 100 | Block + quarantine |
+
+Run it in **Red Team Lab → Intent chains** one action at a time, then open **Intent Sentinel**.
+
+How it works (`backend/app/sentinel/`):
+
+| Module | Role |
+|--------|------|
+| `session_context.py` | `build_session_context(session_id)`: declared purpose, user objective and the last `INTENT_HISTORY_WINDOW` actions, with derived summaries |
+| `intent_rules.py` | Tool taxonomy and deterministic chains: secret→exfiltration, credential discovery, privilege escalation, policy bypass after denial, defense evasion, reconnaissance (watch only), runaway loop. Also purpose alignment, intent drift and temporal session risk |
+| `sequence_patterns.py` | Ordered pattern matching; unmatched later stages become the predicted path |
+| `intent_llm_evaluator.py` | Model evaluator through the existing provider abstraction; deterministic mock offline |
+| `intent_engine.py` | Combines everything into a predicted intent, confidence, drift, next actions and a recommended response |
+| `intent_service.py` | Sessions, per-action records, predictions (`agent_sessions`, `session_actions`, `intent_predictions`) and intent alerts |
+
+Authority, in order: explicit policy, then observed high-risk actions and deterministic sequence rules,
+then the model. The model can raise concern but cannot lower a deterministic conclusion or grant a
+permission. A prediction alone escalates to human review; with `PREDICTIVE_BLOCKING=true` a block
+still needs confidence ≥ 0.90, CRITICAL risk and a deterministic signal. Predictions use the language
+of likelihood ("predicted intent", "consistent with"); only concise structured summaries are stored,
+never a model reasoning transcript.
+
+API: `GET /api/sessions`, `GET /api/sessions/{id}`, `GET /api/sessions/{id}/timeline`,
+`GET /api/sessions/{id}/intent`, `POST /api/sessions/{id}/evaluate-intent`,
+`GET /api/sessions/{id}/risk-trend`, plus `GET /api/intent/comparison` and the step runner
+`POST /api/redteam/intent-step`. Tests: `backend/tests/test_intent.py`.
 
 ## Scope and production boundary
 

@@ -5,7 +5,9 @@ export default defineConfig({
   workers: 1,
   timeout: 30000,
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL:
+      process.env.SENTINEL_UI_URL ||
+      `http://127.0.0.1:${process.env.SENTINEL_UI_PORT || "5174"}`,
     headless: true,
     viewport: { width: 1440, height: 1000 },
     screenshot: "only-on-failure",

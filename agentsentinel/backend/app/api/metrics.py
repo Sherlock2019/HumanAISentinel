@@ -5,13 +5,26 @@ import os
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from app.database.db import get_db
-from app.models.records import Event, Agent, Alert
+from app.models.records import Event, Agent, AgentSession, Alert, IntentPrediction
 from app.sentinel.capability_engine import graph
 
 router = APIRouter(tags=['Metrics'])
 
+def intent_metrics(db):
+    sessions = list(db.scalars(select(AgentSession)))
+    predictions = list(db.scalars(select(IntentPrediction)))
+    with_category = lambda c: len({p.session_id for p in predictions if c in (p.intent_category or [])})
+    return {'high_risk_intent_sessions': sum(s.intent_risk in {'HIGH', 'CRITICAL'} for s in sessions),
+            'intent_drift_alerts': sum(s.intent_drift >= 70 for s in sessions),
+            'predicted_exfiltration': with_category('DATA_EXFILTRATION'),
+            'policy_bypass_attempts': with_category('POLICY_BYPASS'),
+            'tracked_sessions': len(sessions)}
+
 @router.get('/api/metrics')
 def metrics(db=Depends(get_db)):
+    return {**_metrics(db), 'intent': intent_metrics(db)}
+
+def _metrics(db):
     events, agents, alerts = list(db.scalars(select(Event))), list(db.scalars(select(Agent))), list(db.scalars(select(Alert)))
     decisions, severities, tools = Counter(e.decision for e in events), Counter(e.severity for e in events), Counter(e.payload['action']['tool'] for e in events)
     risky = [e for e in events if e.decision == 'BLOCK']

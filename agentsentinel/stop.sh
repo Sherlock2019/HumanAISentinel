@@ -23,5 +23,8 @@ for service in backend frontend; do
       echo "Skipping stale PID $pid: ownership check failed."
     fi
   fi
-  rm -f -- "$file"
+  # A retiring launcher may already have removed this file; do not remove a replacement.
+  if [[ -f "$file" ]] && [[ "$(<"$file")" == "$pid" ]]; then
+    rm -f -- "$file"
+  fi
 done

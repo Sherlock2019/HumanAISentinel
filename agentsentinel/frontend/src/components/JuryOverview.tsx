@@ -223,9 +223,9 @@ const components = [
     proof: "Verify the evidence chain and export the decision history.",
   },
   {
-    name: "Dashboard + Guided Demo + Red Team Lab",
+    name: "Dashboard + Guided Demo + GitHub Integration + Red Team Lab",
     type: "Demo",
-    role: "Present live events, policies, capability paths and 11 repeatable scenarios.",
+    role: "Present live events, policies, capability paths, 11 lab scenarios, 3 mock commit workflows and real public GitHub diff intake.",
     tech: "React + TypeScript + Tailwind + React Flow + Recharts",
     proof: "Run the three-outcome story, then inspect the supporting evidence.",
   },

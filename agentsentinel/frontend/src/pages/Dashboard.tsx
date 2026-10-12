@@ -11,7 +11,12 @@ import {
   Play,
   Radio,
   Workflow,
+  Crosshair,
+  Compass,
+  Upload,
+  Repeat,
 } from "lucide-react";
+import "../components/intent.css";
 import {
   AreaChart,
   Area,
@@ -150,6 +155,25 @@ export default function Dashboard({
           </div>
         ))}
       </div>
+      {m.intent && (
+        <div className="intent-kpis" aria-label="Intent Sentinel">
+          {[
+            { label: "High-risk intent sessions", value: m.intent.high_risk_intent_sessions, icon: Crosshair, detail: "Sequences heading somewhere unsafe" },
+            { label: "Intent drift alerts", value: m.intent.intent_drift_alerts, icon: Compass, detail: "Behavior far from declared purpose" },
+            { label: "Predicted exfiltration", value: m.intent.predicted_exfiltration, icon: Upload, detail: "Sessions predicted to move data out" },
+            { label: "Policy bypass attempts", value: m.intent.policy_bypass_attempts, icon: Repeat, detail: "Denied objective retried by other tools" },
+          ].map((k) => (
+            <button className="kpi" key={k.label} onClick={() => onNavigate("intent")}>
+              <div className="kpi-top">
+                <span>{k.label}</span>
+                <k.icon size={17} className={k.value ? "text-red" : "text-green"} />
+              </div>
+              <strong>{k.value.toString().padStart(2, "0")}</strong>
+              <small>{k.detail}</small>
+            </button>
+          ))}
+        </div>
+      )}
       <div className="overview-grid">
         <Panel
           title="Protection overview"
@@ -301,6 +325,9 @@ export default function Dashboard({
                 <th>Agent / purpose</th>
                 <th>Current task</th>
                 <th>Risk score</th>
+                <th>Predicted intent</th>
+                <th>Intent confidence</th>
+                <th>Intent drift</th>
                 <th>Status</th>
                 <th>Actions/min</th>
                 <th>Blocked</th>
@@ -328,6 +355,17 @@ export default function Dashboard({
                   <td className="task-cell">{a.current_task}</td>
                   <td>
                     <RiskBar score={a.risk_score} />
+                  </td>
+                  <td className="task-cell">{a.intent?.predicted_intent || "—"}</td>
+                  <td>{a.intent ? `${Math.round(a.intent.confidence * 100)}%` : "—"}</td>
+                  <td>
+                    {a.intent ? (
+                      <span className={a.intent.drift >= 70 ? "text-red" : a.intent.drift >= 40 ? "" : "text-green"}>
+                        {a.intent.drift}%
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td>
                     <Badge

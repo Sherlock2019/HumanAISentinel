@@ -21,6 +21,8 @@ import {
   RefreshCw,
   ArrowRight,
   Info,
+  GitCommitHorizontal,
+  Crosshair,
 } from "lucide-react";
 import { useSentinel } from "./hooks/useSentinel";
 import { api, post } from "./api/client";
@@ -36,10 +38,14 @@ import RedTeamLab from "./pages/RedTeamLab";
 import Metrics from "./pages/Metrics";
 import Settings from "./pages/Settings";
 import GuidedDemo from "./components/GuidedDemo";
+import CommitDemo from "./pages/CommitDemo";
+import IntentMonitor from "./pages/IntentMonitor";
 import type { SentinelEvent } from "./types";
 const nav = [
   ["how", "How It Works", Brain],
+  ["commit", "GitHub Integration", GitCommitHorizontal],
   ["dashboard", "Security Operations", LayoutDashboard],
+  ["intent", "Intent Sentinel", Crosshair],
   ["agents", "Agents", Bot],
   ["monitor", "Live Monitor", Radio],
   ["alerts", "Alerts", Bell],
@@ -60,6 +66,7 @@ export default function App() {
     [notice, setNotice] = useState(""),
     [mobile, setMobile] = useState(false),
     [capAgent, setCapAgent] = useState("support-agent"),
+    [intentSession, setIntentSession] = useState(""),
     [working, setWorking] = useState(false);
   const error = useCallback((message: string) => setNotice(message), []);
   useEffect(() => {
@@ -278,7 +285,11 @@ export default function App() {
                 <HowItWorks
                   onDemo={() => setDemo(true)}
                   provider={data.settings?.ai_provider}
+                  onCommit={() => navigate("commit")}
                 />
+              )}
+              {page === "commit" && (
+                <CommitDemo onInspect={inspect} onRefresh={data.refresh} />
               )}
               {page === "agents" && (
                 <Agents agents={data.agents} onControl={control} {...common} />
@@ -328,7 +339,22 @@ export default function App() {
                 <PolicyStudio agents={data.agents} {...common} />
               )}
               {page === "redteam" && (
-                <RedTeamLab {...common} onInspect={inspect} />
+                <RedTeamLab
+                  {...common}
+                  onInspect={inspect}
+                  onMonitor={(sessionId) => {
+                    setIntentSession(sessionId);
+                    navigate("intent");
+                  }}
+                />
+              )}
+              {page === "intent" && (
+                <IntentMonitor
+                  initialSession={intentSession}
+                  onControl={control}
+                  onError={error}
+                  onNavigate={navigate}
+                />
               )}
               {page === "metrics" && data.metrics && (
                 <Metrics metrics={data.metrics} />

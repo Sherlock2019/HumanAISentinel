@@ -1,0 +1,620 @@
+/* Intent Sentinel. Uses the palette variables from styles.css. */
+.badge.watch,
+.badge.high-risk {
+  color: #ba892e;
+  background: #fff8e9;
+  border-color: #f1e6cc;
+}
+.intent-message {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 22px 26px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  background: linear-gradient(120deg, #172338, #24364f);
+  color: #fff;
+}
+.intent-message h2 {
+  font-size: 22px;
+  line-height: 1.25;
+  margin-top: 8px;
+  letter-spacing: -0.3px;
+}
+.intent-message .eyebrow {
+  color: #8fd3be;
+}
+.intent-message-list span {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: #a9b8c9;
+  font-weight: 700;
+}
+.intent-message-list ol {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+.intent-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.intent-main {
+  min-width: 0;
+}
+.session-list {
+  display: grid;
+  gap: 6px;
+  padding: 0 12px 14px;
+  max-height: 720px;
+  overflow: auto;
+}
+.session-item {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+.session-item > div {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 8px;
+}
+.session-item span {
+  font-size: 12px;
+  color: #33475e;
+}
+.session-item small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.session-item.selected {
+  border-color: var(--green);
+  background: #eff8f5;
+}
+.session-context {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.session-context > div {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 4px;
+}
+.session-context span,
+.intent-card-foot span,
+.intent-meter span {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.session-context strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.intent-card {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--green);
+  background: #fff;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 18px 28px;
+}
+.intent-card.is-watch {
+  border-left-color: var(--amber);
+}
+.intent-card.is-danger {
+  border-left-color: var(--red);
+  background: linear-gradient(180deg, #fffafa, #fff);
+}
+.intent-card h2 {
+  color: #1d2a3c;
+  font-size: 26px;
+  letter-spacing: -0.5px;
+  margin: 6px 0 10px;
+}
+.intent-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.intent-tags code,
+.intent-rules code {
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #eef2f7;
+  color: #3e5269;
+}
+.intent-drift-flag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: var(--red);
+  padding: 3px 7px;
+  border-radius: 4px;
+}
+.intent-caveat {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.intent-card-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.intent-meter {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+.intent-meter strong {
+  font-size: 26px;
+  letter-spacing: -0.8px;
+  line-height: 1;
+}
+.intent-meter small {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 2px;
+}
+.intent-meter-track {
+  height: 6px;
+  border-radius: 4px;
+  background: #edf1f4;
+  overflow: hidden;
+}
+.intent-meter-track i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+.intent-card-foot {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.intent-card-foot > div {
+  display: grid;
+  gap: 5px;
+}
+.intent-card-foot strong {
+  font-size: 14px;
+}
+.intent-card-foot small {
+  font-weight: 400;
+  color: var(--muted);
+}
+.intent-decision {
+  letter-spacing: 0.4px;
+}
+.intent-decision.quarantine,
+.intent-decision.block {
+  color: var(--red);
+}
+.intent-decision.review,
+.intent-decision.watch {
+  color: var(--amber);
+}
+.intent-decision.allow {
+  color: var(--green);
+}
+.intent-alert {
+  border: 2px solid var(--red);
+  border-radius: 12px;
+  background: #fff5f6;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+}
+.intent-alert-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--red);
+}
+.intent-alert-head > div {
+  flex: 1;
+}
+.intent-alert-head h3 {
+  font-size: 18px;
+  color: #223044;
+}
+.intent-alert dl,
+.compare-col dl {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 6px 14px;
+  margin: 14px 0;
+  font-size: 12px;
+}
+.intent-alert dt,
+.compare-col dt {
+  color: var(--muted);
+  font-weight: 600;
+}
+.intent-alert dd,
+.compare-col dd {
+  margin: 0;
+}
+.intent-alert dd span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+}
+.intent-alert-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.intent-two {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+}
+.intent-why {
+  padding: 0 21px 21px;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+.intent-why p {
+  margin: 0;
+}
+.intent-why p.step {
+  padding-left: 14px;
+  color: #3c4f66;
+}
+.intent-why p.conclusion {
+  margin-top: 6px;
+  font-weight: 650;
+}
+.intent-rules {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.intent-rules > span {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.intent-rules > div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.intent-rules small {
+  color: #5b6b7d;
+}
+.intent-trend {
+  padding: 0 10px 14px;
+}
+.chain-flow {
+  height: 190px;
+  border-top: 1px solid #edf1f4;
+}
+.chain-node {
+  display: grid;
+  gap: 3px;
+  text-align: center;
+}
+.chain-node strong {
+  font-size: 12px;
+}
+.chain-node code {
+  font-size: 10px;
+  color: #4a5d73;
+}
+.chain-node span {
+  font-size: 9px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chain-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.chain-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-left: 6px;
+}
+.chain-legend .green {
+  background: #259b81;
+}
+.chain-legend .amber {
+  background: #d08a12;
+}
+.chain-legend .red {
+  background: #d44350;
+}
+.intent-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 21px 21px;
+  display: grid;
+  gap: 0;
+}
+.intent-timeline li {
+  display: grid;
+  grid-template-columns: 74px 22px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 11px 0;
+  border-bottom: 1px solid #f0f3f6;
+}
+.intent-timeline li:last-child {
+  border-bottom: 0;
+}
+.intent-timeline time {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.intent-timeline li > div {
+  display: grid;
+  gap: 3px;
+}
+.intent-timeline small {
+  font-size: 11px;
+  color: #5b6b7d;
+}
+.intent-timeline .intent-after {
+  color: #2f4864;
+}
+.intent-timeline li.allowed > svg {
+  color: var(--green);
+}
+.intent-timeline li.watch > svg,
+.intent-timeline li.review > svg,
+.intent-timeline li.high-risk > svg {
+  color: var(--amber);
+}
+.intent-timeline li.blocked > svg,
+.intent-timeline li.state > svg {
+  color: var(--red);
+}
+.intent-timeline li.state {
+  background: #fff3f4;
+  border-radius: 8px;
+  padding: 10px;
+  grid-template-columns: 64px 22px minmax(0, 1fr);
+}
+.intent-timeline li.state strong {
+  color: var(--red);
+  letter-spacing: 0.4px;
+}
+.timeline-status {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.timeline-status.allowed {
+  color: var(--green);
+}
+.timeline-status.watch,
+.timeline-status.review,
+.timeline-status.high-risk {
+  color: var(--amber);
+}
+.timeline-status.blocked {
+  color: var(--red);
+}
+.next-actions {
+  display: grid;
+  gap: 8px;
+  padding: 0 21px 21px;
+}
+.next-actions > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px dashed #c9d3dd;
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+.next-actions small {
+  color: var(--muted);
+  margin-left: auto;
+}
+.compare-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 0 21px 21px;
+}
+.compare-col {
+  border-radius: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+}
+.compare-col.normal {
+  background: #f1f9f5;
+  border-color: #cfe8dc;
+}
+.compare-col.suspicious {
+  background: #fff4f5;
+  border-color: #f1d3d7;
+}
+.compare-seq {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  margin: 12px 0;
+}
+.compare-seq > div {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+.compare-seq svg {
+  color: var(--muted);
+}
+.compare-col dl {
+  grid-template-columns: 130px minmax(0, 1fr);
+}
+.intent-arch {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 4px 21px 24px;
+  color: var(--muted);
+}
+.intent-arch-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.intent-arch-row span {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fafbfd;
+  font-size: 12px;
+  color: #33475e;
+}
+.intent-arch-core {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  background: #223044;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+}
+.intent-arch-core.risk {
+  background: #248f76;
+}
+.intent-empty-action {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 22px;
+}
+.chain-runner {
+  padding: 0 21px 21px;
+  display: grid;
+  gap: 16px;
+}
+.chain-runner-head {
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.chain-runner-head p {
+  margin: 6px 0;
+  font-size: 13px;
+}
+.chain-runner-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chain-table td {
+  font-size: 12px;
+}
+.chain-table tr.pending td {
+  color: #a3adb8;
+}
+.chain-table small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+}
+.chain-response {
+  display: inline-flex;
+  gap: 4px;
+}
+.chain-runner .intent-card {
+  margin-bottom: 0;
+}
+.intent-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+  margin-bottom: 24px;
+}
+.intent-kpis .kpi {
+  cursor: pointer;
+  text-align: left;
+}
+.how-intent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 0 21px 21px;
+}
+.how-intent h2 {
+  font-size: 20px;
+  letter-spacing: -0.3px;
+  margin: 6px 0 10px;
+}
+.how-intent p {
+  font-size: 13px;
+  color: #4a5d73;
+}
+.how-intent-phrase {
+  margin-top: 14px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #223044;
+}
+@media (max-width: 1150px) {
+  .intent-layout,
+  .intent-two,
+  .intent-card,
+  .compare-grid,
+  .how-intent,
+  .intent-message {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .intent-card-metrics,
+  .intent-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .session-context {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

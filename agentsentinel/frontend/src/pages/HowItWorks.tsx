@@ -28,7 +28,10 @@ import {
   Database,
   Hand,
   Network,
+  Crosshair,
+  ArrowDown,
 } from "lucide-react";
+import "../components/intent.css";
 import type { LucideIcon } from "lucide-react";
 import { Panel, Badge } from "../components/ui";
 import { JuryWorkflow, WhatMakesItWork } from "../components/JuryOverview";
@@ -91,6 +94,16 @@ const explanations: Record<
     output: "An anomaly score and human-readable signals.",
     example:
       "Three blocked retries in 60 seconds trigger automatic quarantine.",
+  },
+  intent: {
+    title: "Intent Engine",
+    icon: Crosshair,
+    what: "Intent Engine evaluates the sequence of actions across the entire agent session rather than judging only the current tool call.",
+    why: "One tool call may look harmless. The sequence may not.",
+    input: "Declared purpose, user objective, the last 20 session actions, denials, retries and the proposed action.",
+    output: "Predicted intent, confidence, purpose alignment, intent drift, session risk and likely next step.",
+    example:
+      "list_files → read_config → read_env is each permitted, but the sequence predicts credential discovery and is sent to review before read_secret.",
   },
   risk: {
     title: "Risk & Decision Engine",
@@ -159,6 +172,7 @@ const positions: Record<string, { x: number; y: number }> = {
   policy: { x: 405, y: 5 },
   llm: { x: 405, y: 158 },
   behavior: { x: 405, y: 310 },
+  intent: { x: 405, y: 460 },
   risk: { x: 645, y: 158 },
   human: { x: 880, y: 5 },
   tool: { x: 1090, y: 80 },
@@ -174,6 +188,8 @@ const links = [
   ["policy", "risk", "", "base"],
   ["llm", "risk", "", "base"],
   ["behavior", "risk", "", "base"],
+  ["gateway", "intent", "session", "base"],
+  ["intent", "risk", "", "base"],
   ["risk", "tool", "ALLOW", "allow"],
   ["risk", "human", "REVIEW", "review"],
   ["human", "tool", "approved", "review"],
@@ -184,9 +200,11 @@ const links = [
 export default function HowItWorks({
   onDemo,
   provider,
+  onCommit,
 }: {
   onDemo: () => void;
   provider?: string;
+  onCommit: () => void;
 }) {
   const [selected, setSelected] = useState("gateway"),
     [path, setPath] = useState("all"),
@@ -284,6 +302,9 @@ export default function HowItWorks({
           2 · What Makes It Work <ArrowRight size={15} />
         </button>
         <span>Understand the idea, then run the proof.</span>
+        <button className="secondary" onClick={onCommit}>
+          Explore GitHub Integration <ArrowRight size={15} />
+        </button>
       </div>
       <div className="explain-hero">
         <div>
@@ -461,6 +482,56 @@ export default function HowItWorks({
               <br />
               Administrator alerted
             </p>
+          </div>
+        </div>
+      </Panel>
+      <Panel
+        title="Thread-aware protection: Intent Sentinel"
+        subtitle="Guard the session, not just the tool call."
+      >
+        <div className="how-intent">
+          <div>
+            <span className="eyebrow">INTENT ENGINE</span>
+            <h2>
+              One tool call may look harmless.
+              <br />
+              The sequence may not.
+            </h2>
+            <p>
+              Intent Engine evaluates the sequence of actions across the entire
+              agent session rather than judging only the current tool call. It
+              compares what the agent was asked to do with what it has already
+              done, what it is trying to do now and what it may try next.
+            </p>
+            <p>
+              The result is a <b>predicted intent</b> with a confidence, never a
+              claim about hidden intent. It is one risk signal: deterministic
+              policy and observed actions stay authoritative, and a prediction
+              alone escalates to human review, not to a block.
+            </p>
+            <div className="how-intent-phrase">
+              GUARD THE SESSION, NOT JUST THE TOOL CALL.
+            </div>
+          </div>
+          <div className="intent-arch" aria-label="Session-aware architecture">
+            <span className="intent-arch-core">Agent session</span>
+            <ArrowDown size={16} />
+            <div className="intent-arch-row">
+              <span>Current action</span>
+              <span>Session history</span>
+            </div>
+            <ArrowDown size={16} />
+            <span className="intent-arch-core">
+              <Crosshair size={15} /> Intent Engine
+            </span>
+            <ArrowDown size={16} />
+            <div className="intent-arch-row">
+              <span>Predicted objective</span>
+              <span>Intent drift</span>
+              <span>Possible next step</span>
+            </div>
+            <ArrowDown size={16} />
+            <span className="intent-arch-core risk">Risk Engine</span>
           </div>
         </div>
       </Panel>

@@ -34,6 +34,37 @@ class ActionRequest(BaseModel):
     arguments: dict = Field(default_factory=dict)
     context: dict = Field(default_factory=dict)
     simulated_cost: float = Field(default=0.001, ge=0, le=100000)
+    session_id: str | None = Field(default=None, max_length=120)
+
+INTENT_CATEGORIES = (
+    'NORMAL_TASK_EXECUTION', 'INFORMATION_RETRIEVAL', 'DATA_TRANSFORMATION', 'CODE_MODIFICATION',
+    'SYSTEM_CONFIGURATION', 'CREDENTIAL_DISCOVERY', 'PRIVILEGE_ESCALATION', 'DATA_COLLECTION',
+    'DATA_EXFILTRATION', 'POLICY_BYPASS', 'DEFENSE_EVASION', 'SELF_MODIFICATION', 'PERSISTENCE_ATTEMPT',
+    'RESOURCE_ABUSE', 'UNCONTROLLED_LOOP', 'UNAUTHORIZED_WRITE', 'UNKNOWN',
+)
+
+class IntentResult(BaseModel):
+    """What an intent evaluator (mock or LLM) may return. Advisory only."""
+    predicted_intent: str = Field(min_length=1, max_length=300)
+    categories: list[str] = Field(default_factory=lambda: ['UNKNOWN'])
+    purpose_alignment: float = Field(ge=0, le=1)
+    confidence: float = Field(ge=0, le=1)
+    risk: Literal['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+    evidence: list[str] = Field(default_factory=list)
+    predicted_next_actions: list[str] = Field(default_factory=list)
+    recommended_response: Literal['ALLOW', 'WATCH', 'REVIEW', 'BLOCK']
+
+    @model_validator(mode='after')
+    def controlled_categories(self):
+        # Free-text categories from a model are mapped onto the controlled vocabulary.
+        self.categories = [c for c in (c.strip().upper() for c in self.categories) if c in INTENT_CATEGORIES] or ['UNKNOWN']
+        self.evidence = [e[:300] for e in self.evidence[:8]]
+        self.predicted_next_actions = [a[:80] for a in self.predicted_next_actions[:5]]
+        return self
+
+class SessionCreate(BaseModel):
+    agent_id: str
+    user_objective: str = Field(default='', max_length=1000)
 
 class JudgeResult(BaseModel):
     intent_alignment: int = Field(ge=1, le=5)

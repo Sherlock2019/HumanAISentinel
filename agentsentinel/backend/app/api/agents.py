@@ -3,7 +3,7 @@ import hashlib
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from app.database.db import get_db
-from app.models.records import Agent, Policy, Event, BehaviorHistory, Setting, utcnow
+from app.models.records import Agent, AgentSession, Policy, Event, BehaviorHistory, Setting, utcnow
 from app.schemas.contracts import AgentCreate
 from app.sentinel.quarantine import transition
 from app.api.shared import require_admin
@@ -11,8 +11,16 @@ from datetime import timedelta
 
 router = APIRouter(prefix='/api/agents', tags=['Agents'])
 
+def intent_summary(db, a):
+    s = db.scalar(select(AgentSession).where(AgentSession.agent_id == a.id).order_by(AgentSession.last_updated.desc()).limit(1))
+    if s is None:
+        return None
+    return {'session_id': s.session_id, 'predicted_intent': s.intent_prediction, 'categories': s.intent_categories,
+            'confidence': s.intent_confidence, 'risk': s.intent_risk, 'drift': s.intent_drift,
+            'session_risk': s.session_risk, 'session_status': s.status}
+
 def serialize(db, a, credentials=False):
-    return {'id': a.id, 'name': a.name, 'purpose': a.purpose, 'owner': a.owner, 'environment': a.environment, 'status': a.status, 'risk_score': a.risk_score, 'current_task': a.current_task, 'last_activity': a.last_activity.isoformat(), 'blocked': db.scalar(select(func.count()).select_from(Event).where(Event.agent_id == a.id, Event.decision == 'BLOCK')), 'actions_per_minute': db.scalar(select(func.count()).select_from(BehaviorHistory).where(BehaviorHistory.agent_id == a.id, BehaviorHistory.timestamp >= utcnow()-timedelta(seconds=60))), 'policy': db.get(Policy, a.id).data, **({'token': a.token} if credentials else {})}
+    return {'id': a.id, 'name': a.name, 'purpose': a.purpose, 'owner': a.owner, 'environment': a.environment, 'status': a.status, 'risk_score': a.risk_score, 'current_task': a.current_task, 'last_activity': a.last_activity.isoformat(), 'blocked': db.scalar(select(func.count()).select_from(Event).where(Event.agent_id == a.id, Event.decision == 'BLOCK')), 'actions_per_minute': db.scalar(select(func.count()).select_from(BehaviorHistory).where(BehaviorHistory.agent_id == a.id, BehaviorHistory.timestamp >= utcnow()-timedelta(seconds=60))), 'policy': db.get(Policy, a.id).data, 'intent': intent_summary(db, a), **({'token': a.token} if credentials else {})}
 
 @router.get('')
 def list_agents(db=Depends(get_db)):

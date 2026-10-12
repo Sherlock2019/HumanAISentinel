@@ -1,5 +1,6 @@
 """Verify cached launcher readiness and SIGINT cleanup. Run with services stopped."""
 from pathlib import Path
+import os
 import signal
 import socket
 import subprocess
@@ -7,6 +8,9 @@ import time
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
+API_PORT = int(os.getenv('SENTINEL_API_PORT', '8100'))
+UI_PORT = int(os.getenv('SENTINEL_UI_PORT', '5174'))
+PORTS = [API_PORT, UI_PORT]
 
 def port_free(port):
     with socket.socket() as probe:
@@ -17,7 +21,7 @@ def port_free(port):
         except OSError:
             return False
 
-assert all(port_free(p) for p in [8000, 5173]), 'Stop AgentSentinel before lifecycle verification'
+assert all(port_free(p) for p in PORTS), 'Stop AgentSentinel before lifecycle verification'
 process = subprocess.Popen([str(ROOT / 'start.sh')], cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 try:
     deadline = time.monotonic() + 90
@@ -26,7 +30,7 @@ try:
         if process.poll() is not None:
             raise RuntimeError(process.stdout.read())
         try:
-            for url in ['http://127.0.0.1:8000/health', 'http://127.0.0.1:5173']:
+            for url in [f'http://127.0.0.1:{API_PORT}/health', f'http://127.0.0.1:{UI_PORT}']:
                 with urllib.request.urlopen(url, timeout=1) as response:
                     assert response.status == 200
             ready = True
@@ -40,8 +44,8 @@ finally:
     output, _ = process.communicate(timeout=20)
     print(output[-1000:])
 deadline = time.monotonic()+10
-while time.monotonic()<deadline and not all(port_free(p) for p in [8000, 5173]):
+while time.monotonic()<deadline and not all(port_free(p) for p in PORTS):
     time.sleep(.1)
-assert all(port_free(p) for p in [8000, 5173]), 'A service was left running after SIGINT'
+assert all(port_free(p) for p in PORTS), 'A service was left running after SIGINT'
 assert not (ROOT/'.run/backend.pid').exists() and not (ROOT/'.run/frontend.pid').exists()
 print('PASS: SIGINT stops both services, removes PID files and leaves no listening ports')
